@@ -1,0 +1,173 @@
+<<<<<<< HEAD
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+resources:
+  containers:
+  - container: fcc_develop_tomcat
+    image: fbcc/developtomcat:latest
+    ports:
+    - 8080:8080
+    type: ACR
+    resourceGroup: AZR-C21-DV-195-01
+    registry: p21d19501542001
+    repository: fbcc/developtomcat
+    azureSubscription: AzureDeploy-FCC
+    trigger: 
+      tags:
+      - latest
+
+trigger:
+ - none
+
+#parameters:
+#- name: build_tags
+#  displayName: build_tags
+#  type: string
+#  default: 6.0.3.0_77819 
+#  values: 
+#    - 6.0.3.0_77819
+#    - latest
+
+
+pool:
+  name: 'FRMPool'
+#  demands:
+#  - agent.name -equals l33q19504536004-4
+
+stages:
+- stage: MSSQL2019_AKS
+  jobs:
+  - deployment: MSSQL2019_AKS
+    displayName: Deploy MSSQL2019 AKS
+#    variables:
+#      build_tags: ${{ parameters.build_tags }}
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+#          - task: Kubernetes@1
+#            inputs:
+#              connectionType: 'Kubernetes Service Connection'
+#              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+#              namespace: 'fcc-poc'
+#              command: 'apply'
+#              arguments: '-f $(Pipeline.Workspace)/s/FCC_AKS_POC/tomcat_mssql2019/templates/tomcat-deployment-mssql2019.yml'
+#          - task: Kubernetes@1
+#            inputs:
+#              connectionType: 'Kubernetes Service Connection'
+#              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+#              namespace: 'fcc-poc'
+#              command: 'set'
+#              arguments: 'image deployment.apps/fcctomcatmssql2019 fcc-tomcat-mssql2019-container=p21d19501542001.azurecr.io/fbcc/developtomcat:$(build_tags) --record'
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'Name'
+              chartName: 'fcc-tomcat-mssql-upgrade'
+              releaseName: 'fcc-tomcat-mssql-84142'
+=======
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+ - none
+
+resources:
+  containers:
+  - container: fcc_develop_tomcat
+    image: fbcc/developtomcat:latest
+    type: ACR
+    resourceGroup: AZR-C21-DV-195-01
+    registry: p21d19501542001
+    repository: fbcc/developtomcat
+    azureSubscription: AzureDeploy-FCC
+    trigger: 
+      tags:
+      - latest
+
+#parameters:
+#- name: build_tags
+#  displayName: build_tags
+#  type: string
+#  default: 6.0.3.0_77819 
+#  values: 
+#    - 6.0.3.0_77819
+#    - latest
+
+
+pool:
+  name: 'FRMPool'
+#  demands:
+#  - agent.name -equals l33q19504536004-4
+
+stages:
+- stage: MSSQL2019_AKS
+  jobs:
+  - deployment: MSSQL2019_AKS
+    displayName: Deploy MSSQL2019 AKS
+    variables:
+      build_tags: ${{ parameters.build_tags }}
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'apply'
+              arguments: '-f $(Pipeline.Workspace)/s/FCC_AKS_POC/tomcat_mssql2019/templates/tomcat-deployment-mssql2019.yml'
+#          - task: Kubernetes@1
+#            inputs:
+#              connectionType: 'Kubernetes Service Connection'
+#              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+#              namespace: 'fcc-poc'
+#              command: 'set'
+#              arguments: 'image deployment.apps/fcctomcatmssql2019 fcc-tomcat-mssql2019-container=p21d19501542001.azurecr.io/fbcc/developtomcat:$(build_tags) --record'
+          
+>>>>>>> fcc-poc-helm

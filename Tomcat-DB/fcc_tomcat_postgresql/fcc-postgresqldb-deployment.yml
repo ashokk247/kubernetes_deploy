@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fccpostgresqldb
+  labels:
+    app: fcc_postgresql_app
+spec:
+  replicas: 1
+  serviceName: fccpostgresqldbsvc
+  selector:
+    matchLabels:
+      app: fcc_postgresql_app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcc_postgresql_app
+    spec:
+      # securityContext:
+      #   runAsUser: 1001
+      #   runAsGroup: 1001
+        # fsGroup: 1001
+      # nodeSelector:
+      #   kubernetes.io/hostname: aks-l21d11107014-59385960-vmss00007u
+      containers:
+      - name: fcc-postgresqldb-container
+        image: p21d19501542001.azurecr.io/postgresql:13
+        # securityContext:
+        #   enabled: true
+        #   runAsUser: 1001
+        #   runAsGroup: 1001
+          # fsGroup: 1001
+        # command: ["ping"]
+        # args: ["localhost"]
+        # image: p32q22702680001.azurecr.io/devops/oracle:blank_schema
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: POSTGRESQL_PASSWORD
+            value: test
+        #   - name: ORACLE_PWD
+        #     value: password
+          # - name: INIT_SGA_SIZE
+          #   value: 3603
+          # - name: INIT_PGA_SIZE
+          #   value: 3603
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+          # - name: fcc-postgresqldb-config
+          #   mountPath: /bitnami/postgresql/data/
+          - name: fcc-postgresqldb-script
+            mountPath: /docker-entrypoint-initdb.d
+          # - name: fcc-oracledb-startup
+          #   mountPath: /docker-entrypoint-initdb.d/startup
+          # - name: fcc-oracledb-setup
+          #   mountPath: /docker-entrypoint-initdb.d/setup
+      imagePullSecrets: 
+      - name: fcc-acr-secret
+        # volumeMounts:
+        #   - name: 
+        #     mountPath: 
+      # - name: fcc-oracle-app-container
+      #   image: p21d19501542001.azurecr.io/fbcc/developtomcat
+      #   imagePullPolicy: IfNotPresent
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+      #   ports:
+      #   - containerPort: 8080
+      #   volumeMounts:
+      #     - name: fcc-oracle-appdata
+      #       mountPath: /opt/FCC/appdata
+      # volumes:
+      #   - name: fcc-postgresqldb-config
+      #     persistentVolumeClaim:
+      #       claimName: fcc-postgresqldbpvc-claim
+          # azureFile:
+          #   shareName: fcc-tomcat-postgresql
+          #   secretName: fcc-afs-aks-secret
+          #   readOnly: false
+
+        # - name: fcc-oracledb-config
+        #   persistentVolumeClaim:
+        #     claimName: fcc-oracledb-config-pvc
+      volumes:
+        - name: fcc-postgresqldb-script
+          azureFile:
+            shareName: fcc-tomcat-postgresql/DB_Script
+            secretName: fcc-afs-aks-secret
+            readOnly: false
+
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: fcc-postgresqldb-config
+  #     spec:
+  #       # storageClassName: my-azurefile
+  #       accessModes:
+  #         - "ReadWriteMany"
+  #       resources:
+  #         requests:
+  #           storage: 50Gi

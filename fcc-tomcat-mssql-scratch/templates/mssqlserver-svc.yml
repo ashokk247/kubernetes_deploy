@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.mssqlserver_service.svcName }}
+  labels:
+    app: {{ .Values.mssqlserver_service.appName }}
+    io.service: {{ .Values.mssqlserver_service.ioServiceName }}
+spec:
+  type: {{ .Values.mssqlserver_service.type }}
+  selector:
+    io.service: {{ .Values.mssqlserver_service.ioServiceName }}
+  ports:
+  - port: {{ .Values.mssqlserver_service.port }}
+    targetPort: {{ .Values.mssqlserver_service.targetPort }}
+#    nodePort: 31000 

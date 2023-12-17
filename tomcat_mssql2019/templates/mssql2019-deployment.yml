@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: mssql2019
+  name: fccmssql2019
+  labels:
+    app: fcctomcatmssql2019
+    io.service: fcctomcatmssql
+spec:
+  selector:
+    matchLabels:
+      io.service: fcctomcatmssql
+  strategy:
+  template:
+    metadata:
+      labels:
+        app: fcctomcatmssql2019
+        io.service: fcctomcatmssql
+    spec:
+      containers:
+      - image: mcr.microsoft.com/mssql/server:2019-latest
+        name: fccmssql2019container
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: SA_PASSWORD
+          value: Finastra123$
+        ports:
+        - containerPort: 1433
+        volumeMounts:
+          - name: mssql-afs-storage
+            mountPath: /var/opt/mssql
+        
+      volumes:
+      - name: mssql-afs-storage
+        persistentVolumeClaim:
+          claimName: fcc-mssql2019-claim
+        #- name: azure-fs
+        #  azureFile:
+        #    shareName: fcc-postgres
+        #    secretName: fcc-secret
+        #    #type: Directory
+        #    readOnly: false

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: mssql2019
+  name: {{ .Values.mssqlserver_deployment.deployName }}
+  labels:
+    app: {{ .Values.mssqlserver_deployment.appName }}
+    io.service: {{ .Values.mssqlserver_deployment.ioServiceName }}
+spec:
+  selector:
+    matchLabels:
+      io.service: {{ .Values.mssqlserver_deployment.ioServiceName }}
+  strategy:
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.mssqlserver_deployment.appName }}
+        io.service: {{ .Values.mssqlserver_deployment.ioServiceName }}
+    spec:
+      containers:
+      - image: mcr.microsoft.com/mssql/server:2019-latest
+        name: {{ .Values.mssqlserver_deployment.containerName }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: SA_PASSWORD
+          value: {{ .Values.mssqlserver_deployment.password }}
+        ports:
+        - containerPort: {{ .Values.mssqlserver_deployment.containerPort }}
+        volumeMounts:
+          - name: {{ .Values.mssqlserver_deployment.volMountName }}
+            mountPath: /var/opt/mssql
+        
+      volumes:
+      - name: {{ .Values.mssqlserver_deployment.volMountName }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.mssqlserver_deployment.volClaimName }}
+        #- name: azure-fs
+        #  azureFile:
+        #    shareName: fcc-postgres
+        #    secretName: fcc-secret
+        #    #type: Directory
+        #    readOnly: false

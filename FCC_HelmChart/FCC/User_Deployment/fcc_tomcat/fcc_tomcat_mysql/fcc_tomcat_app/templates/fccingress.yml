@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  namespace: fcc-poc
+  labels:
+    app: {{ .Values.fcctomcat_deployment.labels.app }}
+    io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+        # - path: /FCC/portal
+        #   pathType: Prefix
+        - backend:
+            serviceName: {{ .Values.service.name }}
+            servicePort: {{ .Values.service.port }}
+status:
+  loadBalancer:
+    ingress:
+      - ip: {{ .Values.ingress.loadBalancer.ip }}

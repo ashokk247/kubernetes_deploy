@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: fccoracledb
+  labels:
+    app: fcc_oracle_app
+  annotations:
+    kubernetes.io/ingress.class: ffdcdev-private
+spec:
+  tls:
+    - hosts:
+        - fbccoracle.ffdcdev.fusionfabric.io
+  rules:
+    - host: fbccoracle.ffdcdev.fusionfabric.io
+      http:
+        paths:
+        # - path: /FCC/portal
+        #   pathType: Prefix
+        - backend:
+            serviceName: fccoracleapp-svc
+            servicePort: 8080
+status:
+  loadBalancer:
+    ingress:
+      - ip: 10.206.16.254

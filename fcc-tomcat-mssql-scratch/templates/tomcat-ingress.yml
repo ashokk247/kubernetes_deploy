@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.classAnnotation }}
+  labels:
+    app: {{ .Values.ingress.appName }}
+    io.service: {{ .Values.ingress.ioServiceName }}
+  name: {{ .Values.ingress.ingressName }}
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.ingress.hostName }}
+  rules:
+    - host: {{ .Values.ingress.hostName }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ .Values.ingress.svcName }}
+              servicePort: {{ .Values.ingress.svcPort }}
+status:
+  loadBalancer:
+    ingress:
+      - ip: {{ .Values.ingress.lbIp }}
+

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fccoracleapp-deployment
+  labels:
+    app: fcc_oracle_app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fcc_oracle_app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcc_oracle_app
+    spec:
+      # nodeSelector:
+      #   kubernetes.io/hostname: aks-l21d11107014-59385960-vmss000076
+      containers:
+      - name: fcc-oracledb-container
+        image: p21d19501542001.azurecr.io/fbcc/developtomcat:latest
+        imagePullPolicy: Always
+        args:
+          - --web.external-url=https://fbccoracle.ffdcdev.fusionfabric.io/FCC/portal
+
+        # env:
+        #   - name: ORACLE_SID
+        #     value: ORCL
+        #   - name: ORACLE_PWD
+        #     value: password
+          # - name: INIT_SGA_SIZE
+          #   value: 3603
+          # - name: INIT_PGA_SIZE
+          #   value: 3603
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: afs-fcc-oracledb
+            mountPath: /opt/FCC/appdata
+      imagePullSecrets: 
+      - name: fcc-acr-secret
+        # volumeMounts:
+        #   - name: 
+        #     mountPath: 
+      # - name: fcc-oracle-app-container
+      #   image: p21d19501542001.azurecr.io/fbcc/developtomcat
+      #   imagePullPolicy: IfNotPresent
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+      #   ports:
+      #   - containerPort: 8080
+      #   volumeMounts:
+      #     - name: fcc-oracle-appdata
+      #       mountPath: /opt/FCC/appdata
+      # volumes:
+      #   - name: fcc-oracle-appdata
+      #     hostPath:
+      #       path: /opt/fcc-appdata/fcc-oracle-appdat
+      volumes:
+        - name: afs-fcc-oracledb
+          azureFile:
+            shareName: fcc-oracle-torque/appdata
+            secretName: fcc-afs-aks-secret
+            readOnly: false
+status: {}

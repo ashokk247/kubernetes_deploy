@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fccoracloracledb-deployment
+  labels:
+    app: fcc_oracle_app
+spec:
+
+  selector:
+    matchLabels:
+      app: fcc_oracle_app
+  template:
+    metadata:
+      labels:
+        app: fcc_oracle_app
+    spec:
+      # nodeSelector:
+      #   kubernetes.io/hostname: aks-l21d11107014-59385960-vmss000076
+      containers:
+      - name: fcc-oracledb-container
+        image: p32q22702680001.azurecr.io/devops/oracle:blank_schema
+        imagePullPolicy: IfNotPresent
+        # env:
+        #   - name: ORACLE_SID
+        #     value: ORCL
+        #   - name: ORACLE_PWD
+        #     value: password
+          # - name: INIT_SGA_SIZE
+          #   value: 3603
+          # - name: INIT_PGA_SIZE
+          #   value: 3603
+        ports:
+        - containerPort: 1521
+        volumeMounts:
+          - name: fcc-oracledb-config
+            mountPath: /opt/oracle/oradata
+          - name: fcc-oracledb-startup
+            mountPath: /docker-entrypoint-initdb.d/startup
+          - name: fcc-oracledb-setup
+            mountPath: /docker-entrypoint-initdb.d/setup
+      imagePullSecrets: 
+      - name: fcc-acr-secret-p32q22702680001
+        # volumeMounts:
+        #   - name: 
+        #     mountPath: 
+      # - name: fcc-oracle-app-container
+      #   image: p21d19501542001.azurecr.io/fbcc/developtomcat
+      #   imagePullPolicy: IfNotPresent
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+      #   ports:
+      #   - containerPort: 8080
+      #   volumeMounts:
+      #     - name: fcc-oracle-appdata
+      #       mountPath: /opt/FCC/appdata
+      # volumes:
+      #   - name: fcc-oracle-appdata
+      #     hostPath:
+      #       path: /opt/fcc-appdata/fcc-oracle-appdat
+      volumes:
+        - name: fcc-oracledb-config
+          persistentVolumeClaim:
+            claimName: fcc-oracledb-config-pvc
+        - name: fcc-oracledb-startup
+          azureFile:
+            shareName: fcc-tomcat-oracle/startup
+            secretName: fcc-afs-aks-secret
+            readOnly: false
+        - name: fcc-oracledb-setup
+          azureFile:
+            shareName: fcc-tomcat-oracle/setup
+            secretName: fcc-afs-aks-secret
+            readOnly: false

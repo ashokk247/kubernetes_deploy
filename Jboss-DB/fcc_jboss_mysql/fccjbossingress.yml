@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: fccjbossingress
+  labels:
+    app: fccjbossapp
+    io.service: fccjbossapp
+  annotations:
+    kubernetes.io/ingress.class: ffdcdev-private
+spec:
+  tls:
+    - hosts:
+        - fbccjboss.ffdcdev.fusionfabric.io
+  rules:
+    - host: fbccjboss.ffdcdev.fusionfabric.io
+      http:
+        paths:
+        # - path: /FCC/portal
+        #   pathType: Prefix
+        - backend:
+            serviceName: fccjbosssvc
+            servicePort: 8080
+status:
+  loadBalancer:
+    ingress:
+      - ip: 10.206.16.254

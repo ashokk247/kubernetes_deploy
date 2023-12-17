@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: 6.0.2.0
+  name: fccapp
+  labels:
+    app: fcctomcat
+    io.service: fccapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.service: fccapp
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcctomcat
+        io.service: fccapp
+    spec:
+      # securityContext:
+      #   runAsUser: 0
+      #   runAsGroup: 0
+      #   fsGroup: 0
+      containers:
+      - name: fcc-app-container
+        image: p21d19501542001.azurecr.io/fbcc/developtomcat:latest
+        imagePullPolicy: Always
+        # resources:
+        #   requests:
+        #     cpu: 4
+        #     memory: 8Gi
+        #   limits:
+        #     cpu: 4
+        #     memory: 8Gi
+        # securityContext:
+        #   runAsUser: 0
+        #   runAsGroup: 0
+        # securityContext:
+        #   privileged: true
+        args:
+          - --web.external-url=https://fbccmysql.ffdcdev.fusionfabric.io/FCC/portal
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          # - name: appdata-torque-config
+          #   mountPath: /opt/FCC/appdata/config/torque.properties
+          #   subPath: torque.properties
+          # - name: appdata-portal-config
+          #   mountPath: /opt/FCC/appdata/config/portal.properties
+          #   subPath: portal.properties
+          # - name: appdata-turbine-config
+          #   mountPath: /opt/FCC/appdata/config/turbine.properties
+          #   subPath: turbine.properties
+          - name: afs-fcc-appdata
+            mountPath: /opt/FCC/appdata
+            # mountPath: /tmp
+      # securityContext:
+      #   fsGroup: 0
+      imagePullSecrets:
+      - name: fcc-acr-secret
+      hostname: fbccapp
+      restartPolicy: Always
+      volumes:
+        # - name: appdata-torque-config
+        #   configMap:
+        #     name: fcc-appdata-torque-configmap
+        #     items:
+        #     - key: torque.properties
+        #       path: torque.properties
+        # - name: appdata-portal-config
+        #   configMap:
+        #     name: fcc-appdata-portal-configmap
+        #     items:
+        #     - key: portal.properties
+        #       path: portal.properties
+        # - name: appdata-turbine-config
+        #   configMap:
+        #     name: fcc-appdata-turbine-configmap
+        #     items:
+        #     - key: turbine.properties
+        #       path: turbine.properties
+        - name: afs-fcc-appdata
+          # azureDisk:
+          #   diskURI: /subscriptions/a5c4434e-d0e3-4628-91d5-3bca1c2afda0/resourceGroups/AZR-C21-QA-195-03/providers/Microsoft.Compute/disks/fcctomcatapp
+          #   diskName: fcctomcatapp
+          #   kind: Managed
+          #   fsType: ext4
+          persistentVolumeClaim:
+            claimName: fcc-tomcat-pvc
+          # azureFile:
+          #   shareName: fcc-tomcat-share
+          #   secretName: fcc-afs-aks-secret
+          #   readOnly: false
+
+status: {}

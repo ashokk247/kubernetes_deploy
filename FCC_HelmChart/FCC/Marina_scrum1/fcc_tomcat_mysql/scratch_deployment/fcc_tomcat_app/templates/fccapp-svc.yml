@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.fcctomcat_service.name }}
+  namespace: {{ .Values.fcctomcat_deployment.namespace }}
+  labels:
+    app: {{ .Values.fcctomcat_deployment.labels.app }}
+    io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+spec:
+  type: {{ .Values.fcctomcat_service.type }}
+  selector:
+    io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+  ports:
+  - port: {{ .Values.fcctomcat_service.port }}
+    targetPort: {{ .Values.fcctomcat_service.containerPort }}
+status:
+  loadBalancer: {}

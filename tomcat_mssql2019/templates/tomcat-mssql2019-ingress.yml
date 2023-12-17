@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: ffdcdev-private
+  labels:
+    app: fcctomcatmssql2019
+    io.service: fcctomcatmssql
+  name: fcctomcatmssql
+spec:
+  tls:
+    - hosts:
+        - fccdeveloptomcatmssql.ffdcdev.fusionfabric.io
+  rules:
+    - host: fccdeveloptomcatmssql.ffdcdev.fusionfabric.io
+      http:
+        paths:
+          - backend:
+              serviceName: fccapptomcatsvc
+              servicePort: 8080
+status:
+  loadBalancer:
+    ingress:
+      - ip: 10.206.16.254
+

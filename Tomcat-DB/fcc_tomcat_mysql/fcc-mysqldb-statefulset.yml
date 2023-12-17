@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    version: 1.0.0
+  name: fccmysqldb
+  labels:
+    app: fcctomcat
+    io.service: fccapp
+spec:
+  replicas: 1
+  serviceName: fccmysqlsvc
+  # podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      io.service: fccapp
+  # updateStrategy:
+  #   type: RollingUpdate
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcctomcat
+        io.service: fccapp
+    spec:
+      containers:      
+      - name: fccmysqldbcontainer
+        # image: p21d19501542001.azurecr.io/mysql:8
+        image: p21d19501542001.azurecr.io/mysql:latest
+        imagePullPolicy: Always
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: test_pass
+        - name: MYSQL_DATABASE
+          value: synergie
+        ports:
+        - containerPort: 3306
+          name: mysqldbport
+        volumeMounts:
+          - name: fcc-mysql-config
+            mountPath: /var/lib/mysql
+          - name: fcc-mysql-dbscript
+            mountPath: /docker-entrypoint-initdb.d
+        args: 
+        - --lower_case_table_names=1
+      imagePullSecrets:
+      - name: fcc-acr-secret
+      hostname: fbccmysqldb
+      volumes:
+        - name: fcc-mysql-dbscript
+          azureFile:
+            shareName: fcc-tomcat-mysql-1/db-script
+            secretName: fcc-afs-aks-secret
+            readOnly: false
+  volumeClaimTemplates:
+    - metadata:
+        name: fcc-mysql-config
+      spec:
+        # storageClassName: my-azurefile
+        accessModes:
+          - "ReadWriteMany"
+        resources:
+          requests:
+            storage: 10Gi
+      # volumes:
+      #   - name: fcc-pvc-claim
+      #     persistentVolumeClaim:
+      #       claimName: fcc-pvc-claim
+
+          # azureFile:
+          #   shareName: fcc-mysql-afs-aks/fccmysql/mysql
+          #   secretName: fcc-afs-aks-secret
+          #   readOnly: false
+            

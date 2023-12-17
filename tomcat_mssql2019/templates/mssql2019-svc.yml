@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fccmssqlsvc
+  labels:
+    app: fcctomcatmssql2019
+    io.service: fcctomcatmssql
+spec:
+  type: ClusterIP
+  selector:
+    io.service: fcctomcatmssql
+  ports:
+  - port: 1433
+    targetPort: 1433
+#    nodePort: 31000 

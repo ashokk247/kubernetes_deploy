@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: 6.0.2.0
+  name: {{ .Values.fcctomcat_deployment.name }}
+  namespace: {{ .Values.fcctomcat_deployment.namespace }}
+  labels:
+    app: {{ .Values.fcctomcat_deployment.labels.app }}
+    io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+  strategy:
+    type: {{ .Values.fcctomcat_replicaset.strategytype }}
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.fcctomcat_deployment.labels.app }}
+        io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+    spec:
+      containers:
+      - name: {{ .Values.fcctomcat_pod.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          requests:
+            cpu: 4
+            memory: 8Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+        args:
+          - {{ .Values.fcctomcat_pod.args }}
+        ports:
+        - containerPort: {{ .Values.fcctomcat_service.containerPort }}
+        volumeMounts:
+          # - name: {{ .Values.fcctomcat_pod.volumeMounts.name }}
+          #   mountPath: {{ .Values.fcctomcat_pod.volumeMounts.mountPath }}
+          - name: {{ .Values.fcctomcat_pod.configMap.torque.volume_name }}
+            mountPath: {{ .Values.fcctomcat_pod.configMap.torque.pod_mountPath }}
+            subPath: {{ .Values.fcctomcat_pod.configMap.torque.pod_subPath }}
+          - name: {{ .Values.fcctomcat_pod.configMap.portal.volume_name }}
+            mountPath: {{ .Values.fcctomcat_pod.configMap.portal.pod_mountPath }}
+            subPath: {{ .Values.fcctomcat_pod.configMap.portal.pod_subPath }}
+          - name: {{ .Values.fcctomcat_pod.configMap.turbine.volume_name }}
+            mountPath: {{ .Values.fcctomcat_pod.configMap.turbine.pod_mountPath }}
+            subPath: {{ .Values.fcctomcat_pod.configMap.turbine.pod_subPath }}
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecrets }}
+      hostname: {{ .Values.fcctomcat_pod.hostname }}
+      restartPolicy: Always
+      volumes:
+        # - name: {{ .Values.fcctomcat_pod.volumeMounts.name }}
+        #   azureFile:
+        #     shareName: {{ .Values.fcctomcat_pod.volumeMounts.azureshare }}
+        #     secretName: {{ .Values.fcctomcat_pod.volumeMounts.afs_secret }}
+        #     readOnly: false
+        - name: {{ .Values.fcctomcat_pod.configMap.torque.volume_name }}
+          configMap:
+            name: {{ .Values.fcctomcat_pod.configMap.torque.configMap.name }}
+            items:
+            - key: {{ .Values.fcctomcat_pod.configMap.torque.configMap.key }}
+              path: {{ .Values.fcctomcat_pod.configMap.torque.configMap.path }}
+        - name: {{ .Values.fcctomcat_pod.configMap.portal.volume_name }}
+          configMap:
+            name: {{ .Values.fcctomcat_pod.configMap.portal.configMap.name }}
+            items:
+            - key: {{ .Values.fcctomcat_pod.configMap.portal.configMap.key }}
+              path: {{ .Values.fcctomcat_pod.configMap.portal.configMap.path }}
+        - name: {{ .Values.fcctomcat_pod.configMap.turbine.volume_name }}
+          configMap:
+            name: {{ .Values.fcctomcat_pod.configMap.turbine.configMap.name }}
+            items:
+            - key: {{ .Values.fcctomcat_pod.configMap.turbine.configMap.key }}
+              path: {{ .Values.fcctomcat_pod.configMap.turbine.configMap.path }}
+
+status: {}

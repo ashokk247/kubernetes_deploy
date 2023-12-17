@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: fcc-mysqldb-pv
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: my-azurefile
+  azureFile:
+    shareName: fcc-tomcat-mysql
+    secretName: fcc-afs-aks-secret
+    readOnly: false

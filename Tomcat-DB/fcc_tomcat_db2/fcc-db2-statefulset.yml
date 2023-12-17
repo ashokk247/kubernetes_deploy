@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fccdb2
+  labels:
+    app: fcc_db2_app
+spec:
+  replicas: 1
+  # serviceName: fccdb2_svc
+  selector:
+    matchLabels:
+      app: fcc_db2_app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: fcc_db2_app
+    spec:
+      # securityContext:
+      #   runAsUser: 1000
+      #   runAsGroup: 1000
+      #   fsGroup: 1001
+      # nodeSelector:
+      #   kubernetes.io/hostname: aks-l21d11107014-59385960-vmss00007u
+      containers:
+      - name: fcc-db2-container
+        image: ibmcom/db2
+        # securityContext:
+        #   enabled: true
+        #   runAsUser: 1000
+        #   runAsGroup: 1000
+          # fsGroup: 1001
+        # command: ["ping"]
+        # args: ["localhost"]
+        # image: p32q22702680001.azurecr.io/devops/oracle:blank_schema
+        imagePullPolicy: IfNotPresent
+        args:
+          - --privileged=true
+          - --detach
+          - --restart=always
+        env:
+        - name: LICENSE
+          value: "accept"
+        - name: privileged
+          value: "true"
+        - name: DB2INSTANCE
+          value: "db2inst1"
+        - name: DB2INST1_PASSWORD
+          value: "password"
+        - name: DBNAME
+          value: "testdb"
+        - name: BLU
+          value: "false"
+        - name: ENABLE_ORACLE_COMPATIBILITY
+          value: "false"
+        - name: UPDATEAVAIL
+          value: "NO"
+        - name: TO_CREATE_SAMPLEDB
+          value: "false"
+        - name: REPODB
+          value: "false"
+        - name: IS_OSXFS
+          value: "false"
+        - name: PERSISTENT_HOME
+          value: "true"
+        - name: HADR_ENABLED
+          value: "false"
+        securityContext:
+          privileged: true
+      securityContext:
+        fsGroup: 1000
+        #   - name: ORACLE_PWD
+        #     value: password
+          # - name: INIT_SGA_SIZE
+          #   value: 3603
+          # - name: INIT_PGA_SIZE
+          #   value: 3603
+        ports:
+        - containerPort: 50000
+        # volumeMounts:
+          # - name: fcc-postgresqldb-config
+          #   mountPath: /bitnami/postgresql/data/
+          # - name: fcc-db2-script
+          #   mountPath: /docker-entrypoint-initdb.d
+          # - name: fcc-oracledb-startup
+          #   mountPath: /docker-entrypoint-initdb.d/startup
+          # - name: fcc-oracledb-setup
+          #   mountPath: /docker-entrypoint-initdb.d/setup
+      # imagePullSecrets: 
+      # - name: fcc-acr-secret
+        # volumeMounts:
+        #   - name: 
+        #     mountPath: 
+      # - name: fcc-oracle-app-container
+      #   image: p21d19501542001.azurecr.io/fbcc/developtomcat
+      #   imagePullPolicy: IfNotPresent
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+      #   ports:
+      #   - containerPort: 8080
+      #   volumeMounts:
+      #     - name: fcc-oracle-appdata
+      #       mountPath: /opt/FCC/appdata
+      # volumes:
+      #   - name: fcc-postgresqldb-config
+      #     persistentVolumeClaim:
+      #       claimName: fcc-postgresqldbpvc-claim
+          # azureFile:
+          #   shareName: fcc-tomcat-postgresql
+          #   secretName: fcc-afs-aks-secret
+          #   readOnly: false
+
+        # - name: fcc-oracledb-config
+        #   persistentVolumeClaim:
+        #     claimName: fcc-oracledb-config-pvc
+      # volumes:
+      #   - name: fcc-postgresqldb-script
+      #     azureFile:
+      #       shareName: fcc-tomcat-postgresql/DB_Script
+      #       secretName: fcc-afs-aks-secret
+      #       readOnly: false
+
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: fcc-postgresqldb-config
+  #     spec:
+  #       # storageClassName: my-azurefile
+  #       accessModes:
+  #         - "ReadWriteMany"
+  #       resources:
+  #         requests:
+  #           storage: 50Gi

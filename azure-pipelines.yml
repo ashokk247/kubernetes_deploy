@@ -1,0 +1,247 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+trigger:
+ - none
+
+# resources:
+#   containers:
+#     - container: fcc-app-container
+#       image: fbcc/developtomcat:latest
+#       type: ACR
+# # azure subscription with service priciple name
+#       azureSubscription: AzureDeploy-FCC
+#       resourceGroup: AZR-C21-DV-195-01
+#       registry: p21d19501542001
+#       repository: fbcc/v6xl3tomcat
+#       trigger:
+#         tags:
+#         - latest
+
+parameters:
+- name: Webserver
+  displayName: select-webserver
+  type: string
+  values: 
+    - tomcat
+    - jboss
+    - was
+    - weblogic
+- name: Database
+  displayName: select-Database
+  type: string
+  values: 
+    - mysql
+    - oracle
+    - mssql
+    - none
+
+variables:
+
+###---Application Tech Stack---###
+- name: Techstack
+  ${{ if eq(parameters.Webserver, 'tomcat') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_tomcat_app'
+  ${{ if eq(parameters.Webserver, 'jboss') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_jboss/fcc_jboss_mysql/fcc_jboss_app'
+  ${{ if eq(parameters.Webserver, 'was') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_was/fcc_was_app'
+  ${{ if eq(parameters.Webserver, 'weblogic') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_weblogic/fcc_weblogic_app'
+
+###---Database Tech Stack---###
+- name: Database_type
+  ${{ if eq(parameters.Database, 'mysql') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_mysql_db'
+  ${{ if eq(parameters.Database, 'mssql') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_mysql_db'
+
+###---Application Value Files---###
+- name: Applicationtemplatefile
+  ${{ if eq(parameters.Webserver, 'tomcat') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_tomcat_app/values.yaml'
+  ${{ if eq(parameters.Webserver, 'jboss') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_jboss/fcc_jboss_mysql/fcc_jboss_app/values.yaml'
+  ${{ if eq(parameters.Webserver, 'was') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_was/fcc_was_app/values.yaml'
+  ${{ if eq(parameters.Webserver, 'weblogic') }}:
+    value: 'FCC_HelmChart/FCC/User_Deployment/fcc_weblogic/fcc_weblogic_app/values.yaml'
+
+###---Database Value Files---###
+- name: Databasetemplatefile
+  ${{ if eq(parameters.Database, 'mysql') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_mysql_db/values.yaml'  
+  ${{ if eq(parameters.Database, 'DB2') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_jboss/fcc_jboss_mysql/fcc_mysql_db/values.yaml'
+
+
+- name: tomcatconfigmaptemplatefile
+  ${{ if eq(parameters.Webserver, 'tomcat') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_tomcat_app/templates/fcc-tomcat-appdata-torque-configmap.yml'
+- name: jbossconfigmaptemplatefile
+  ${{ if eq(parameters.Webserver, 'jboss') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_jboss/fcc_jboss_mysql/fcc_jboss_app/templates/fcc-tomcat-appdata-torque-configmap.yml'
+- name: wasconfigmaptemplatefile
+  ${{ if eq(parameters.Webserver, 'was') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_was/fcc_was_app/templates/fcc-tomcat-appdata-torque-configmap.yml'
+- name: weblogicconfigmaptemplatefile
+  ${{ if eq(parameters.Webserver, 'weblogic') }}:
+    value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_weblogic/fcc_weblogic_app/templates/fcc-tomcat-appdata-torque-configmap.yml'
+
+    # - name: charttemplatefile
+#   ${{ if eq(parameters.Webserver, 'tomcat') }}:
+#     value: '$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_tomcat_app/Chart.yaml'
+
+pool:
+  name: 'FRMPool'
+  # demands:
+  # - agent.name -equals l33q18303521001-3
+
+# stages:
+# - stage: TOMCAT_MYSQL_AKS
+#   condition: eq('${{ parameters.Webserver }}', 'Tomcat')
+#   jobs:
+#   - deployment: TOMCAT_MYSQL_AKS
+#     displayName: Deploy TOMCAT_MYSQL AKS
+#     variables:
+#       build_tags: latest
+#     pool:
+#       name: 'FRMPool'
+#     # creates an environment if it doesn't exist
+#     environment: 'FCC_FO_AKS_POC'
+#     strategy:
+#       runOnce:
+#         deploy:
+#           steps:
+#           - checkout: self
+#           - task: Bash@3
+#             inputs:
+#               targetType: 'inline'
+#               script: |
+#                 # Write your commands here
+                
+#                 echo 'Hello world'
+
+
+
+stages:
+- stage: TOMCAT_MYSQL_AKS
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS
+    displayName: Deploy TOMCAT_MYSQL AKS
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: Bash@3
+            displayName: Modify the env file for all the docker-compose file
+            inputs:
+              targetType: 'inline'
+              script: |
+                # fcc_tomcat_app_file='$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_tomcat_app/values.yaml'
+                # fcc_tomcat_db_file='$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_mysql_db/values.yaml'
+                # fcc_tomcat_config_file='$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_tomcat/fcc_tomcat_mysql/fcc_tomcat_app/templates/fcc-tomcat-appdata-torque-configmap.yml'
+                # fcc_jboss_app_file='$(Pipeline.Workspace)/s/FCC_HelmChart/FCC/User_Deployment/fcc_jboss/fcc_jboss_mysql/fcc_jboss_app/templates/values.yaml'
+                ##***********Function to replace variables in file*********************##
+                replace_variable_in_the_file(){
+                  file=$1
+                  source="{{ $2 }}"
+                  target=${3}
+                  if [[ ${target} == *['!'@#\$/%^\&*()_+]* ]]
+                  then
+                    sed -i 's|'"${source}"'|'"${target}"'|g' "$file"
+                  else
+                    sed -i "s/${source}/${target}/g" "$file"
+                  fi
+                  echo "############## Values to the env variables in the file- $file #############"
+                }
+                result=none
+                random-string()
+                {
+                    result=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w ${1:-32} | head -n 1)
+                }
+
+                random-string 5
+                echo " RESULT = ${result} "
+
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APPNAME" "fcc-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_CONTAINERNAME" "fcc-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_HOSTNAME" "fcc-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_SERVICENAME" "fcc-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_TORQUE" "fcc-torque-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_PORTAL" "fcc-portal-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_TURBINE" "fcc-turbine-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_APP_INGRESS" "fcc-${{parameters.Webserver}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_REPOSITORY" "$(REPOSITORY)"
+                replace_variable_in_the_file $(Applicationtemplatefile) "FCC_TAG" "$(TAGS)"
+                echo $(REPOSITORY)
+                echo $(TAGS)
+                
+                replace_variable_in_the_file $(tomcatconfigmaptemplatefile) "FCC_DB_SERVICENAME" "fcc${{parameters.Database}}$(Build.BuildId)"
+                replace_variable_in_the_file $(jbossconfigmaptemplatefile) "FCC_DB_SERVICENAME" "fcc${{parameters.Database}}$(Build.BuildId)"
+                replace_variable_in_the_file $(wasconfigmaptemplatefile) "FCC_DB_SERVICENAME" "fcc${{parameters.Database}}$(Build.BuildId)"
+                replace_variable_in_the_file $(weblogicconfigmaptemplatefile) "FCC_DB_SERVICENAME" "fcc${{parameters.Database}}$(Build.BuildId)"
+
+                replace_variable_in_the_file $(Databasetemplatefile) "FCC_DB_NAME" "fcc${{parameters.Database}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Databasetemplatefile) "FCC_APPNAME" "fcc${{parameters.Database}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Databasetemplatefile) "FCC_DB_CONTAINERNAME" "fcc${{parameters.Database}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Databasetemplatefile) "FCC_DB_HOSTNAME" "fcc${{parameters.Database}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Databasetemplatefile) "FCC_DB_SERVICENAME" "fcc${{parameters.Database}}-$(Build.BuildId)"
+                replace_variable_in_the_file $(Databasetemplatefile) "FCC_DB_PORTNAME" "fcc${{parameters.Database}}-$(Build.BuildId)"
+    
+
+
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: $(TechStack)
+              releaseName: 'fcc-app-${{parameters.Webserver}}-$(Build.BuildId)'
+              recreate: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: $(Database_type)
+              releaseName: 'fcc-db-${{parameters.Database}}-$(Build.BuildId)'
+              recreate: true
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Write your commands here
+                
+                echo 'web.external-url=https://fcc-${{parameters.Webserver}}-$(Build.BuildId).ffdcdev.fusionfabric.io/FCC/portal'

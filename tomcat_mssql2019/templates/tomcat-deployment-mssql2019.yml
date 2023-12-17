@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: 6.0.2.1
+  name: fcctomcatmssql2019
+  labels:
+    app: fcctomcatmssql2019
+    io.service: fcctomcatmssql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.service: fcctomcatmssql
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcctomcatmssql2019
+        io.service: fcctomcatmssql
+    spec:
+      containers:
+      - args:
+        - --web.external-url=https://fccdeveloptomcatmssql.ffdcdev.fusionfabric.io/FCC/portal
+        name: fcc-tomcat-mssql2019-container
+        image: p21d19501542001.azurecr.io/fbcc/developtomcat:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: afs-fcc-mssql2019-appdata
+            mountPath: /opt/FCC/appdata
+      volumes:
+        - name: afs-fcc-mssql2019-appdata
+          azureFile:
+            shareName: fcc-mssql-2019-aks/fcctomcatappdatamssql2019/appdata
+            secretName: fcc-afs-aks-secret
+            readOnly: false
+      imagePullSecrets:
+      - name: fcc-acr-secret

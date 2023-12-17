@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: 1.0.0
+  name: fccmysqldb
+  labels:
+    app: fcctomcat
+    io.service: fccapp
+spec:
+  replicas: 1
+  # serviceName: fccmysqlsvc
+  selector:
+    matchLabels:
+      io.service: fccapp
+  # updateStrategy:
+  #   type: RollingUpdate
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcctomcat
+        io.service: fccapp
+    spec:
+      containers:      
+      - name: fccmysqldbcontainer
+        image: p21d19501542001.azurecr.io/mysql:8
+        imagePullPolicy: Always
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: test_pass
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+          - name: fcc-pvc-claim
+            mountPath: /var/lib/mysql
+        #   - name: mysql-initdb
+        #     mountPath: /docker-entrypoint-initdb.d
+        args: 
+        - --lower_case_table_names=1
+      imagePullSecrets:
+      - name: fcc-acr-secret
+      hostname: fbccmysqldb
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: fcc-pvc-claim
+  #     spec:
+  #       storageClassName: my-azurefile
+  #       accessModes:
+  #         - "ReadWriteMany"
+  #       resources:
+  #         requests:
+  #           storage: 10Gi
+      volumes:
+        - name: fcc-pvc-claim
+          persistentVolumeClaim:
+            claimName: fcc-pvc-claim
+      #   - name: mysql-initdb
+      #     configMap:
+      #       name: mysql-initdb-config
+
+          # azureFile:
+          #   shareName: fcc-mysql-afs-aks/fccmysql/mysql
+          #   secretName: fcc-afs-aks-secret
+          #   readOnly: false
+            

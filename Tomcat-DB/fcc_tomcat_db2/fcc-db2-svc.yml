@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fccdb2svc
+  labels:
+    app: fcc_db2_app
+    # io.service: fcc_postgresql_app
+spec:
+  type: NodePort
+  # clusterIP: None
+  selector:
+    app: fcc_db2_app
+  ports:
+  - port: 50000
+    targetPort: 50000
+    name: db2port

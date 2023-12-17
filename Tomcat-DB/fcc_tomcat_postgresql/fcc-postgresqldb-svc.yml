@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fccpostgresqldbsvc
+  labels:
+    app: fcc_postgresql_app
+    # io.service: fcc_postgresql_app
+spec:
+  # type: NodePort
+  clusterIP: None
+  selector:
+    app: fcc_postgresql_app
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgresqldbport

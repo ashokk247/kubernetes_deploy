@@ -1,0 +1,6 @@
+dependencies:
+- name: fcc_mysql_db
+  repository: file://../fcc_mysql_db
+  version: 0.1.0
+digest: sha256:0d91c592bb98a04a2cc6bba9710cc2ece118461d5c190a9567be9f742ab0fef7
+generated: "2021-11-19T16:55:37.264812+05:30"

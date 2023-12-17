@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mssqlserver_pvc.claimName }}
+spec:
+  resources:
+    requests:
+      storage: {{ .Values.mssqlserver_pvc.storageValue }}
+  storageClassName: {{ .Values.mssqlserver_pvc.storageClassName }}
+  accessModes:
+    - ReadWriteMany
+  volumeName: {{ .Values.mssqlserver_pvc.volumeName }}

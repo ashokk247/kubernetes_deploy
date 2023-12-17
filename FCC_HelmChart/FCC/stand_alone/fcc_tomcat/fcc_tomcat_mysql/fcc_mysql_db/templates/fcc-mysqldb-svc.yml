@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.fccmysqldb_service.name}}
+  namespace: fcc-poc
+  labels:
+    app: {{ .Values.fccmysqldb_deployment.labels.app }}
+    io.service: {{ .Values.fccmysqldb_deployment.labels.io_service }}
+spec:
+  clusterIP: None
+  selector:
+    io.service: {{ .Values.fccmysqldb_deployment.labels.io_service }}
+  ports:
+  - port: {{ .Values.fccmysqldb_service.port}}
+    targetPort: {{ .Values.fccmysqldb_service.targetport}}
+    name: {{ .Values.fccmysqldb_service.portname}}

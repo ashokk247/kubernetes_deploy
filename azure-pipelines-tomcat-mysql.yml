@@ -1,0 +1,305 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+trigger:
+ - none
+
+resources:
+  containers:
+    - container: fcc-app-container
+      image: fbcc/developtomcat:latest
+      type: ACR
+# azure subscription with service priciple name
+      azureSubscription: AzureDeploy-FCC
+      resourceGroup: AZR-C21-DV-195-01
+      registry: p21d19501542001
+      repository: fbcc/v6xl3tomcat
+      # trigger:
+      #   tags:
+      #   - latest
+
+# parameters:
+# - name: build_tags
+#   displayName: build_tags
+#   type: string
+#   default: latest 
+#   values: 
+#     - 6.0.3.0_77819
+#     - latest
+
+
+pool:
+  name: 'FRMPool'
+#  demands:
+#  - agent.name -equals l33q19504536004-4
+
+stages:
+- stage: TOMCAT_MYSQL_AKS
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS
+    displayName: Deploy TOMCAT_MYSQL AKS
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'FCC_HelmChart/FCC_Tomcat/fcc_tomcat_mysql/scratch_deployment/fcc_tomcat_app'
+              releaseName: 'fcc-tomcat-mysql-app'
+              recreate: true
+- stage: 
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS_QA2
+    displayName: Deploy TOMCAT_MYSQL AKS QA2
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'FCC_HelmChart/FCC_Tomcat/Sunita_scrum2/fcc_tomcat_mysql/scratch_deployment/fcc_tomcat_app'
+              releaseName: 'fcc-tomcat-mysql-app-qa2'
+              recreate: true
+
+- stage: 
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS_QA5
+    displayName: Deploy TOMCAT_MYSQL AKS QA5
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'FCC_HelmChart/FCC_Tomcat/Tribhuwan_scrum5/fcc_tomcat_mysql/scratch_deployment/fcc_tomcat_app'
+              releaseName: 'fcc-tomcat-mysql-app-qa5'
+              recreate: true
+
+- stage: 
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS_QA1
+    displayName: Deploy TOMCAT_MYSQL AKS QA1
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'FCC_HelmChart/FCC_Tomcat/Marina_scrum1/fcc_tomcat_mysql/scratch_deployment/fcc_tomcat_app'
+              releaseName: 'fcc-tomcat-mysql-app-qa1'
+              recreate: true
+
+- stage: 
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS_QA4
+    displayName: Deploy TOMCAT_MYSQL AKS QA4
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'FCC_HelmChart/FCC_Tomcat/Mahadevi_scrum4/fcc_tomcat_mysql/scratch_deployment/fcc_tomcat_app'
+              releaseName: 'fcc-tomcat-mysql-app-qa4'
+              recreate: true
+
+- stage: 
+  jobs:
+  - deployment: TOMCAT_MYSQL_AKS_QA3
+    displayName: Deploy TOMCAT_MYSQL AKS QA3
+    variables:
+      build_tags: latest
+    pool:
+      name: 'FRMPool'
+    # creates an environment if it doesn't exist
+    environment: 'FCC_FO_AKS_POC'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'login'
+              outputFormat: 'yaml'
+            displayName: Login to AKS
+          - task: HelmInstaller@0
+            inputs:
+              helmVersion: '2.14.1'
+              installKubectl: false
+              checkLatestHelmVersion: true
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'ls'
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'FCC_FO_AKS_POC-p21d11107025001-fcc-poc-1628154037642'
+              namespace: 'fcc-poc'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: 'FCC_HelmChart/FCC_Tomcat/Asha_scrum3/fcc_tomcat_mysql/scratch_deployment/fcc_tomcat_app'
+              releaseName: 'fcc-tomcat-mysql-app-qa3'
+              recreate: true

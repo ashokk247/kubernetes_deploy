@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fccoracledb
+  labels:
+    app: fcc_oracle_app
+spec:
+  replicas: 1
+  serviceName: fccoracledb-svc
+  selector:
+    matchLabels:
+      app: fcc_oracle_app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fcc_oracle_app
+    spec:
+      securityContext:
+        runAsUser: 54321
+        fsGroup: 54321
+      nodeSelector:
+        kubernetes.io/hostname: aks-l21d11107014-59385960-vmss00007u
+      containers:
+      - name: fcc-oracledb-container
+        image: p21d19501542001.azurecr.io/oracle:19c-se
+        resources:
+          requests:
+            cpu: 100m
+            memory: 3603Mi
+          limits:
+            cpu: 250m
+            memory: 3603Mi
+
+        # command: ["ping"]
+        # args: ["localhost"]
+        # image: p32q22702680001.azurecr.io/devops/oracle:blank_schema
+        imagePullPolicy: IfNotPresent
+        # env:
+        #   - name: ORACLE_SID
+        #     value: ORCL
+        #   - name: ORACLE_PWD
+        #     value: password
+          # - name: INIT_SGA_SIZE
+          #   value: 3603
+          # - name: INIT_PGA_SIZE
+          #   value: 3603
+        ports:
+        - containerPort: 1521
+        # volumeMounts:
+        #   - name: fcc-oracledb-config
+        #     mountPath: /opt/oracle/oradata
+          # - name: fcc-oracledb-startup
+          #   mountPath: /docker-entrypoint-initdb.d/startup
+          # - name: fcc-oracledb-setup
+          #   mountPath: /docker-entrypoint-initdb.d/setup
+      imagePullSecrets: 
+      - name: fcc-acr-secret
+        # volumeMounts:
+        #   - name: 
+        #     mountPath: 
+      # - name: fcc-oracle-app-container
+      #   image: p21d19501542001.azurecr.io/fbcc/developtomcat
+      #   imagePullPolicy: IfNotPresent
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+      #   ports:
+      #   - containerPort: 8080
+      #   volumeMounts:
+      #     - name: fcc-oracle-appdata
+      #       mountPath: /opt/FCC/appdata
+      # volumes:
+      #   - name: fcc-oracledb-config
+      #     azureFile:
+      #       shareName: fcc-tomcat-oracle-test
+      #       secretName: fcc-afs-aks-secret
+      #       readOnly: false
+
+        # - name: fcc-oracledb-config
+        #   persistentVolumeClaim:
+        #     claimName: fcc-oracledb-config-pvc
+      # volumes:
+      #   - name: fcc-oracledb-startup
+      #     azureFile:
+      #       shareName: fcc-tomcat-oracle/startup
+      #       secretName: fcc-afs-aks-secret
+      #       readOnly: false
+      #   - name: fcc-oracledb-setup
+      #     azureFile:
+      #       shareName: fcc-tomcat-oracle/setup
+      #       secretName: fcc-afs-aks-secret
+      #       readOnly: false
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: fcc-oracledb-config
+  #     spec:
+  #       # storageClassName: my-azurefile
+  #       accessModes:
+  #         - "ReadWriteMany"
+  #       resources:
+  #         requests:
+  #           storage: 50Gi

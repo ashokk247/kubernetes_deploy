@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.mssqlserver_pv.volName }}
+spec:
+  capacity:
+    storage: {{ .Values.mssqlserver_pv.storageValue }}
+#  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  azureFile:
+    secretName: {{ .Values.mssqlserver_pv.secretName }}
+    shareName: {{ .Values.mssqlserver_pv.shareName }}
+    readOnly: false
+#    type: Directory
+#  mountOptions:
+#  - dir_mode=0777
+#  - file_mode=0777
+#  - uid=postgres
+#  - gid=postgres
+#  - mfsymlinks
+#  - nobrl
+  storageClassName: {{ .Values.mssqlserver_pv.storageClassName }}
+#  persistentVolumeReclaimPolicy: Retain

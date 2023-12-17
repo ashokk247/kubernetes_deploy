@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: fcc-poc
+  labels:
+    app: {{ .Values.fcctomcat_deployment.labels.app }}
+    io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    io.service: {{ .Values.fcctomcat_deployment.labels.io_service }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.containerPort }}
+status:
+  loadBalancer: {}

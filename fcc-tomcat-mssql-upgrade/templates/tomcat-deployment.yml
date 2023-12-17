@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    version: 6.0.3.0
+  name: {{ .Values.tomcat_deployment.deployName }}
+  labels:
+    app: {{ .Values.tomcat_deployment.appName }}
+    io.service: {{ .Values.tomcat_deployment.ioServiceName }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      io.service: {{ .Values.tomcat_deployment.ioServiceName }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.tomcat_deployment.appName }}
+        io.service: {{ .Values.tomcat_deployment.ioServiceName }}
+    spec:
+      containers:
+      - args:
+        - --web.external-url={{ .Values.tomcat_deployment.webExtUrl }}
+        name: {{ .Values.tomcat_deployment.containerName }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - containerPort: {{ .Values.tomcat_deployment.containerPort }}
+        volumeMounts:
+          - name: {{ .Values.tomcat_deployment.volMountName }}
+            mountPath: /opt/FCC/appdata
+      volumes:
+        - name: {{ .Values.tomcat_deployment.volMountName }}
+          azureFile:
+            shareName: fcc-mssql-2019-aks/fcctomcatappdatamssql2019/appdata
+            secretName: {{ .Values.tomcat_deployment.secretName }}
+            readOnly: false
+      imagePullSecrets:
+      - name: {{ .Values.tomcat_deployment.imagePullSecret }}

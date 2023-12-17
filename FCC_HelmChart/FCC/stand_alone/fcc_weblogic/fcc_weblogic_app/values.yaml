@@ -1,0 +1,146 @@
+# Default values for tomcat_mysql_upgrade_helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# fcc_mysql_db:
+#   enabled: true
+
+replicaCount: 1
+
+fcctomcat_deployment:
+  name: {{ FCC_APPNAME }}
+  labels:
+    app: fcctomcat
+    io_service: {{ FCC_APPNAME }}
+
+fcctomcat_replicaset:
+  strategytype: RollingUpdate
+
+fcctomcat_pod:
+  name: {{ FCC_APP_CONTAINERNAME }}
+  hostname: {{ FCC_APP_HOSTNAME }}
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+  limits:
+      cpu: 4
+      memory: 8Gi
+  args: --web.external-url=https://{{ FCC_APP_URLNAME }}.ffdcdev.fusionfabric.io/FCC/portal
+  volumeMounts:
+    name: afs-fcc-appdata
+    mountPath: /opt/FCC/appdata
+    azureshare: fcc-tomcat-appdata
+    afs_secret: fcc-afs-aks-secret
+  configMap:
+    torque:
+      volume_name: appdata-torque-config
+      pod_mountPath: /opt/FCC/appdata/config/torque.properties
+      pod_subPath: torque.properties
+      configMap:
+        name: {{ FCC_APP_TORQUE }}
+        key: torque.properties
+        path: torque.properties
+    portal:
+      volume_name: appdata-portal-config
+      pod_mountPath: /opt/FCC/appdata/config/portal.properties
+      pod_subPath: portal.properties
+      configMap:
+        name: {{ FCC_APP_PORTAL }}
+        key: portal.properties
+        path: portal.properties
+    turbine:
+      volume_name: appdata-turbine-config
+      pod_mountPath: /opt/FCC/appdata/config/turbine.properties
+      pod_subPath: turbine.properties
+      configMap:
+        name: {{ FCC_APP_TURBINE }}
+        key: turbine.properties
+        path: turbine.properties
+# fcctomcat_service:
+#   name: {{ FCC_APP_SERVICENAME }}
+#   type: ClusterIP
+#   port: 8080
+#   containerPort: 8080
+
+image:
+  repository: p21d19501542001.azurecr.io/{{ FCC_REPOSITORY }}
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: {{ FCC_TAG }}
+
+imagePullSecrets: fcc-acr-secret
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  name: {{ FCC_APP_SERVICENAME }}
+  type: ClusterIP
+  port: 83
+  containerPort: 8080
+
+
+ingress:
+  name: {{ FCC_APP_INGRESS }}
+  enabled: false
+  className: ffdcdev-private
+  annotations: {}
+  loadBalancer:
+    ip: 10.206.16.254
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  host: '{{ FCC_APP_URLNAME }}.ffdcdev.fusionfabric.io'
+      # paths:
+      #   - path: /
+      #     pathType: ImplementationSpecific
+  # tls:
+  #   hosts: fbccmysql.ffdcdev.fusionfabric.io
+  #  - secretName: chart-example-tls
+    # - hosts: fbccmysql.ffdcdev.fusionfabric.io
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

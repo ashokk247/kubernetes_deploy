@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.tomcat_service.svcName }}
+  labels:
+    app: {{ .Values.tomcat_service.appName }}
+    io.service: {{ .Values.tomcat_service.ioServiceName }}
+spec:
+  type: {{ .Values.tomcat_service.type }}
+  selector:
+    io.service: {{ .Values.tomcat_service.ioServiceName }}
+  ports:
+  - name: "8080"
+    port: {{ .Values.tomcat_service.port }}
+    targetPort: {{ .Values.tomcat_service.targetPort }}
+status:
+  loadBalancer: {}
+

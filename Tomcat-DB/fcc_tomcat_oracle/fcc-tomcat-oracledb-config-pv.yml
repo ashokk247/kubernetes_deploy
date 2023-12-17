@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: fcc-oracledb-config-pv-0
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    namespace: fcc-poc
+    name: fcc-oracledb-config-fccoracledb-0
+  azureFile:
+    shareName: fcc-tomcat-oracle-test
+    secretName: fcc-afs-aks-secret
+    readOnly: false
+  # mountOptions:
+  #   # - dir_mode=0777
+  #   # - file_mode=0777
+  #   - uid=54321
+  #   - gid=54322

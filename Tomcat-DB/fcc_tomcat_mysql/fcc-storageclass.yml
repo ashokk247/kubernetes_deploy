@@ -1,0 +1,17 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: my-azurefile
+provisioner: kubernetes.io/azure-disk
+# mountOptions:
+#   - uid=0
+#   - gid=0
+#   - dir_mode=755
+#   - file_mode=755
+#   - vers=3.0
+#   - serverino
+#   - mfsymlinks
+#   - cache=strict
+#   - actimeo=30
+parameters:
+  skuName: Standard_LRS
